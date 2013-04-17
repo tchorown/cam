@@ -14,13 +14,15 @@
 	<Button
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:text="@string/find_ip" />
+	    android:text="@string/client_phone" 
+		android:onClick="setClient"/>
 
 	<Button
 	    android:id="@+id/button2"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:text="@string/find_ip" />
+	    android:text="@string/server_phone"
+	    android:onClick="setServer" />
 
 	<Button
 	    android:id="@+id/button1"

@@ -9,9 +9,11 @@ import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 public class DisplayMessageActivity extends Activity {
+	public final static String EXTRA_MESSAGE = "com.examlpe.myfirstapp.MESSAGE";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,5 +70,22 @@ public class DisplayMessageActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+    
+    public void setClient(View view) {
+        Intent intent = new Intent(this, ClientActivity.class);
+        EditText editText = (EditText) findViewById(R.id.edit_message);
+        String message = editText.getText().toString();
+        intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
+    }
+	
+    
+    public void setServer(View view) {
+        Intent intent = new Intent(this, ServerActivity.class);
+        EditText editText = (EditText) findViewById(R.id.edit_message);
+        String message = editText.getText().toString();
+        intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
+    }
 
 }

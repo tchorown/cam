@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".ClientActivity" >
+    tools:context=".ServerActivity" >
 
     <EditText
         android:id="@+id/editText1"
@@ -14,9 +14,21 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="42dp"
+        android:layout_marginBottom="55dp"
         android:ems="10"
-        android:inputType="textMultiLine" />
+        android:inputType="textMultiLine" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/serverChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="130dp"
+        android:text="@string/hello_world" />
 
     <DigitalClock
         android:id="@+id/digitalClock1"
@@ -24,15 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:layout_marginTop="14dp"
         android:text="DigitalClock" />
-
-    <TextView
-        android:id="@+id/clientChat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/digitalClock1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="54dp"
-        android:text="@string/client_phone" />
 
 </RelativeLayout>

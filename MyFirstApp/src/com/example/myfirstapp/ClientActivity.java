@@ -4,10 +4,12 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -37,52 +39,52 @@ public class ClientActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_client);
+		setContentView(R.layout.activity_client);		
+		server = "10.0.2.2";
 		
-	    serverIP = (EditText) findViewById(activity_server);
-	    
+		Intent intent = getIntent();
+		String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+		
+		EditText editText = (EditText) findViewById(R.id.clientChat);
+	   	editText.append(message);
+		
+
+		System.out.println("UN>PBUC>RDUR");
+		// TODO Auto-generated catch block
+		serverIP = (EditText) findViewById(activity_server);
+		Thread client = new Thread(new ClientThread());
+		client.run();
 	}
 
 
-    public void onClick(View v) throws IOException {
-    	server = "10.0.2.2";
-		Socket clientSocket = null;
-		try {
-			clientSocket = new Socket(server, 6789);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public class ClientThread implements Runnable {
+		@Override
+		public void run() {
+			Socket clientSocket = null;
+			try {
+				clientSocket = new Socket(server, 8080);
+				connectonEstablished = true;
+				
+				DataOutputStream outToServer =
+						new DataOutputStream(clientSocket.getOutputStream());
+						
+				outToServer.writeBytes("Sent message \n");
+			    BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			    
+		        serverOut = inFromServer.readLine();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				
+			
 		}
+	}
 
-
-        DataOutputStream outToServer = null;
-		try {
-			outToServer = new DataOutputStream(clientSocket.getOutputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        BufferedReader inFromServer = null;
-		try {
-			inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-                
-        if (!connectonEstablished) {
-            serverIPAddr = serverIP.getText().toString();
-            while(true){
-            	sendStr = ("THIS IS A STRING");
-                outToServer.writeBytes(sendStr + '\n');
-                serverOut = inFromServer.readLine();
-            }
-        }
-    }
-            
+ 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
