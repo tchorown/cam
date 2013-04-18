@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.example.myfirstapp.ServerActivity.ServerThread;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,13 +30,17 @@ public class ClientActivity extends Activity {
 
 	private EditText serverIP;
 	private Button connect;
-
 	private String serverIPAddr = "NOT AN IP ADDRESS";
 	private String userMessage;
+	private String serverReturn;
 	private boolean connectionEstablished = false;
 	private Handler handler = new Handler();
 	private boolean connectonEstablished;
 	private int activity_server;
+
+	public BufferedReader inFromServer;
+	public DataOutputStream outToServer;
+	public ClientThread client;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +52,10 @@ public class ClientActivity extends Activity {
 		System.out.println("UN>PBUC>RDUR");
 		// TODO Auto-generated catch block
 		serverIP = (EditText) findViewById(activity_server);
-		Thread client = new Thread(new ClientThread());
+
+	//	client = new Thread(new ClientThread());
+		client = new ClientThread();
 		client.run();
-		
 
 		String message = serverOut; // intent.getStringExtra(DisplayMessageActivity.EXTRA_MESSAGE);
 
@@ -56,15 +63,28 @@ public class ClientActivity extends Activity {
 		editText.append(message);
 	}
 
-	public void forwardMessage(View view) {
+	public void forwardMessage(View view) throws IOException {
 		EditText userArea = (EditText) findViewById(R.id.client_chat_area);
-		userMessage = "You: " + userArea.getText().toString() + "\n";
+		userMessage = "Client: " + userArea.getText().toString() + "\n";
+
+		client.sendMessage(outToServer);
 		
-		TextView editText = (TextView) findViewById(R.id.clientChat);		
+		if (client.isAlive() == true){
+			if (serverOut != null){
+				TextView editText = (TextView) findViewById(R.id.clientChat);
+				serverOut = serverOut + "\n";
+				editText.append(serverOut);
+			}
+		}
+
+		TextView editText = (TextView) findViewById(R.id.clientChat);
 		editText.append(userMessage);
+		userArea.setText("");
 	}
 
-	public class ClientThread implements Runnable {
+	public class ClientThread extends Thread {
+		public Socket clientSocket;
+
 		@Override
 		public void run() {
 			Socket clientSocket = null;
@@ -72,13 +92,13 @@ public class ClientActivity extends Activity {
 				clientSocket = new Socket(server, 8080);
 				connectonEstablished = true;
 
-				DataOutputStream outToServer = new DataOutputStream(
+				outToServer = new DataOutputStream(
 						clientSocket.getOutputStream());
 
 				outToServer.writeBytes("Sent message \n");
-				BufferedReader inFromServer = new BufferedReader(
-						new InputStreamReader(clientSocket.getInputStream()));
-
+				inFromServer = new BufferedReader(new InputStreamReader(
+						clientSocket.getInputStream()));
+				this.sendMessage(outToServer);
 				serverOut = "Server:" + inFromServer.readLine() + "\n";
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
@@ -87,7 +107,17 @@ public class ClientActivity extends Activity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
 
+		public Socket getSocket() {
+			return clientSocket;
+		}
+
+		public void sendMessage(DataOutputStream outToServer)
+				throws IOException {
+			EditText userArea = (EditText) findViewById(R.id.client_chat_area);
+			userMessage = "Client: " + userArea.getText().toString() + "\n";
+			outToServer.writeBytes(userMessage);
 		}
 	}
 

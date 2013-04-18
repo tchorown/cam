@@ -14,9 +14,9 @@
     <string name="title_activity_display_message">MyMessage</string>
     <string name="title_activity_server">ServerActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="client_phone">Set as client phone. </string>
+    <string name="client_phone">Set as client phone. \n </string>
     <string name="send_button">Send</string>
-    <string name="server_phone">Set as server.</string>
+    <string name="server_phone">Set as server. \n</string>
     <string name="title_activity_client">ClientActivity</string>
 
 </resources>

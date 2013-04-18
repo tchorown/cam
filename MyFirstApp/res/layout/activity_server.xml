@@ -8,40 +8,54 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ServerActivity" >
 
-    <EditText
-        android:clickable="false" 
-        android:cursorVisible="false" 
-        android:focusable="false" 
-        android:focusableInTouchMode="false"
-        android:id="@+id/serverChat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="55dp"
-        android:ems="10"
-        android:inputType="textMultiLine" >
-        
-        <requestFocus />
-    </EditText>
-
     <DigitalClock
-        android:id="@+id/digitalClock1"
+        android:id="@+id/clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="14dp"
         android:text="DigitalClock" />
-
-    <EditText
-        android:id="@+id/editText2"
+    
+        <ScrollView
+        android:id="@+id/SCROLLER_ID"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/serverChat"
-        android:layout_alignLeft="@+id/editText1"
-        android:layout_marginBottom="36dp"
+        android:layout_above="@+id/server_chat_area"
+        android:layout_alignLeft="@+id/server_chat_area"
+        android:layout_alignRight="@+id/clock"
+        android:layout_below="@+id/clock"
+        android:fillViewport="true"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:id="@+id/serverChat"
+            android:layout_width="wrap_content"
+            android:layout_height="502dp"
+            android:layout_below="@+id/clock"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="54dp"
+            android:text="@string/server_phone" />
+    </ScrollView>
+
+    <EditText
+        android:id="@+id/server_chat_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:layout_toLeftOf="@+id/clock"
         android:ems="10"
         android:inputType="textMultiLine" />
+
+    <Button
+        android:id="@+id/sendButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/clock"
+        android:layout_alignTop="@+id/server_chat_area"
+        android:onClick="forwardMessage"
+        android:text="@string/send_button" />
 
 </RelativeLayout>
