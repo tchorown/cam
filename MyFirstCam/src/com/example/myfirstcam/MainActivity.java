@@ -24,5 +24,10 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent(this,StreamActivity.class);
 		startActivity(intent);
 	}
+	
+	public void play(View view){
+		Intent intent = new Intent(this,PlayActivity.class);
+		startActivity(intent);
+	}
 
 }
