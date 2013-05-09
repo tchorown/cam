@@ -108,9 +108,9 @@ public class StreamActivity extends Activity {
 			
 			recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 			recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-			recorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-			recorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+			recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 			recorder.setVideoSize(320, 240);
 			
 			if(sholder != null){
