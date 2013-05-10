@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 public class ClientActivity extends Activity {
 	// For the interface section
-	// Change this editText and button to the UI shit section
+	// Change this editText and button to the UI section
 
 	String sendStr = null;
 	String serverOut;
@@ -47,21 +47,21 @@ public class ClientActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_client);
 		server = "10.0.2.2";
-
-		Intent intent = getIntent();
-		System.out.println("UN>PBUC>RDUR");
+		Thread cThread = new Thread(new ClientThread());
+		cThread.start();
+		//Intent intent = getIntent();
 		// TODO Auto-generated catch block
-		serverIP = (EditText) findViewById(activity_server);
-
+		//serverIP = (EditText) findViewById(activity_server);
 	//	client = new Thread(new ClientThread());
-		client = new ClientThread();
-		client.run();
-
-		String message = serverOut; // intent.getStringExtra(DisplayMessageActivity.EXTRA_MESSAGE);
-
-		TextView editText = (TextView) findViewById(R.id.clientChat);
-		editText.append(message);
+//		client = new ClientThread();
+//		client.run();
+//		String message = serverOut; // intent.getStringExtra(DisplayMessageActivity.EXTRA_MESSAGE);
+//
+//		TextView editText = (TextView) findViewById(R.id.clientChat);
+//		editText.append(message);
+		
 	}
+
 
 	public void forwardMessage(View view) throws IOException {
 		EditText userArea = (EditText) findViewById(R.id.client_chat_area);
@@ -69,7 +69,7 @@ public class ClientActivity extends Activity {
 
 		client.sendMessage(outToServer);
 		
-		if (client.isAlive() == true){
+		if (client!=null){
 			if (serverOut != null){
 				TextView editText = (TextView) findViewById(R.id.clientChat);
 				serverOut = serverOut + "\n";
@@ -82,24 +82,21 @@ public class ClientActivity extends Activity {
 		userArea.setText("");
 	}
 
-	public class ClientThread extends Thread {
-		public Socket clientSocket;
-
-		@Override
+	public class ClientThread implements Runnable {
 		public void run() {
-			Socket clientSocket = null;
 			try {
-				clientSocket = new Socket(server, 8080);
+				Socket clientSocket = new Socket("10.0.2.2", 8080);
 				connectonEstablished = true;
-
+				//while(connectionEstablished){
 				outToServer = new DataOutputStream(
 						clientSocket.getOutputStream());
 
-				outToServer.writeBytes("Sent message \n");
-				inFromServer = new BufferedReader(new InputStreamReader(
-						clientSocket.getInputStream()));
-				this.sendMessage(outToServer);
-				serverOut = "Server:" + inFromServer.readLine() + "\n";
+				outToServer.writeBytes("Sent message "+"\n");
+				//inFromServer = new BufferedReader(new InputStreamReader(
+				//clientSocket.getInputStream()));
+				//this.sendMessage(outToServer);
+				//serverOut = "Server:" + inFromServer.readLine() + "\n";
+				//}
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -109,9 +106,7 @@ public class ClientActivity extends Activity {
 			}
 		}
 
-		public Socket getSocket() {
-			return clientSocket;
-		}
+
 
 		public void sendMessage(DataOutputStream outToServer)
 				throws IOException {

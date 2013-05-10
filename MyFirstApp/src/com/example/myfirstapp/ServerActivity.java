@@ -14,11 +14,13 @@ import java.util.Enumeration;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+
 
 public class ServerActivity extends Activity {
 	public String keywordin, output;
@@ -27,36 +29,37 @@ public class ServerActivity extends Activity {
 	private BufferedReader inFromClient;
 	private DataOutputStream outToClient;
 	private String serverMessage;
-
+	private Handler handler= new Handler();
 	public static String SERVER_PHONE_IP = "10.0.2.15";
 	public static final int PORT = 92;
 	public static final int SERVER_PORT = 12345;
 	public boolean connectionEstablished = false;
 	private ServerSocket socketConnection;
+	private TextView editText;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_server);
-		SERVER_PHONE_IP = getServerIp(); // address of phone
+		//SERVER_PHONE_IP = getServerIp(); // address of phone
 
 		serverThreadStart = new Thread(new ServerThread());
 		serverThreadStart.start();
 
 		// Create the text view
-		String message = SERVER_PHONE_IP;
-
-		long startVal = System.currentTimeMillis();
-
-		while (((System.currentTimeMillis() / 1000) - startVal / 1000) < 10) {
-			int a = 0;
-		}
-
-		if (connectionEstablished == true) {
-			message = keywordin;
-		}
-		
-		keywordin = null;
+//		String message = SERVER_PHONE_IP;
+//		System.out.println(message);
+//		long startVal = System.currentTimeMillis();
+//
+//		while (((System.currentTimeMillis() / 1000) - startVal / 1000) < 10) {
+//			int a = 0;
+//		}
+//
+//		if (connectionEstablished == true) {
+//			message = keywordin;
+//		}
+//		
+//		keywordin = null;
 	}
 
 	public void forwardMessage(View view) {
@@ -64,11 +67,14 @@ public class ServerActivity extends Activity {
 		serverMessage = "Server: " + userArea.getText().toString() + "\n";
 		
 		if (serverThreadStart.isAlive() == true){
-			if (keywordin != null){
-				TextView editText = (TextView) findViewById(R.id.serverChat);
-				keywordin = keywordin + "\n";
-				editText.append(keywordin);
-			}
+//			if (keywordin != null){
+//				TextView editText = (TextView) findViewById(R.id.serverChat);
+//				keywordin = keywordin + "\n";
+//				editText.append(keywordin);
+//			}
+			try{
+			outToClient.writeBytes(serverMessage+'\n');
+			}catch(Exception e){}
 		}
 
 
@@ -119,24 +125,35 @@ public class ServerActivity extends Activity {
 	}
 
 	public class ServerThread implements Runnable {
-		@Override
 		public void run() {
 
 			ServerSocket socketConnection = null;
 			try {
+				socketConnection = new ServerSocket(12345);
+				editText = (TextView) findViewById(R.id.serverChat);
+				handler.post(new Runnable(){
+					@Override
+					public void run(){
+						editText.append("Now Waiting"+'\n');
+					}
+				});
 				while (true) {
-					socketConnection = new ServerSocket(12345);
 					Socket connectionSocket = socketConnection.accept();
 					inFromClient = new BufferedReader(
 							new InputStreamReader(
 									connectionSocket.getInputStream()));
 					outToClient = new DataOutputStream(
 							connectionSocket.getOutputStream());
-					outToClient.writeBytes("THIS IS MESSAGE FROM SERVER \n");
+					//outToClient.writeBytes("THIS IS MESSAGE FROM SERVER \n");
 					while (true) {
 						connectionEstablished = true;						
 						keywordin = (inFromClient.readLine());
-
+						handler.post(new Runnable(){
+							@Override
+							public void run(){
+								editText.append(keywordin+'\n');
+							}
+						});
 					}
 				}
 
