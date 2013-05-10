@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketException;
 
 
@@ -18,11 +20,16 @@ import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+/**
+ * Stream to the destination server. Uses mediacontroller and camera to record the video
+ */
 
 public class StreamActivity extends Activity {
 	SurfaceHolder sholder;
@@ -30,6 +37,8 @@ public class StreamActivity extends Activity {
 	MediaRecorder recorder;
 	LocalSocket mReceiver,mSender;
 	InputStream ris;
+	ParcelFileDescriptor pfd;
+	int start;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -81,93 +90,88 @@ public class StreamActivity extends Activity {
 		public void surfaceCreated(SurfaceHolder holder) {
 			camera = Camera.open(0);
 			try {
-				camera.setPreviewDisplay(holder);
-			} catch (IOException e) {
+				recordVideo();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			this.recordVideo();
-		}
-
-		public void recordVideo() {
-			createSockets();
-			int start = 0;
 			
+
+		}
+		//Open the mediarecorder and record the video
+		public void recordVideo() {
+			new Thread(new Runnable() {
+				public void run() {
+					try {
+						createConnection();
+						System.out.println("Connection created");
+
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+				    }
+				  }).start();
 			try {
 				camera.setPreviewDisplay(sholder);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}		
 			camera.unlock();
-			
 			MediaRecorder recorder = new MediaRecorder();
 			
 			recorder.setCamera(camera);
-			
-			
 			recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 			recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-			recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+			recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 			recorder.setVideoSize(320, 240);
 			
 			if(sholder != null){
 				recorder.setPreviewDisplay(sholder.getSurface());
 			}
-			
-			recorder.setOutputFile(mSender.getFileDescriptor());
+			while(start!=1){}
+			recorder.setOutputFile(pfd.getFileDescriptor());
 			//this is where the camera will set the data to write to file.
 			try {
 				recorder.prepare();
-				start = 1;
-			} catch (IllegalStateException e1) {
-				// TODO Auto-generated catch block4
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-		//	camera.unlock();
-			if (start == 1){
-				recorder.start();   // Recording is now started, can do whatever with it
-			}
-			  new Thread(new Runnable() {
-				    public void run() {
-						try {
-							sendUDP();
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-				    }
-				  }).start();
+			recorder.start();   // Recording is now started, can do whatever with it
 
 		}
-
-		private void sendUDP() throws Exception {
-			DatagramSocket serverSocket = new DatagramSocket(12345);
-			InetAddress IPaddress = InetAddress.getByName("10.0.2.2");
-			int port = 12345;
-			int PACKETSIZE = 1200;
-			byte[] buffer = new byte[PACKETSIZE];
-			while(true){
-				int actualread=0;
-				int totalread =0;
-				while(totalread < PACKETSIZE){
-					try {
-						actualread= ris.read(buffer,totalread,PACKETSIZE-totalread);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					totalread+=actualread;
-				}
-				DatagramPacket sendPacket = new DatagramPacket(buffer,buffer.length,IPaddress,port);
-				serverSocket.send(sendPacket);
-				
-			}
+		private void createConnection() throws Exception{
+			ServerSocket welcomeSocket=new ServerSocket(6789);
+			Socket connectionSocket = welcomeSocket.accept();
+			pfd = ParcelFileDescriptor.fromSocket(connectionSocket);
+			start =1;
+		}
+/**
+ * Uses UDP to send the video packets to the destination
+ */
+//		private void sendUDP() throws Exception {
+//			DatagramSocket serverSocket = new DatagramSocket(12345);
+//			InetAddress IPaddress = InetAddress.getByName("10.0.2.2");
+//			int port = 12345;
+//			int PACKETSIZE = 1200;
+//			byte[] buffer = new byte[PACKETSIZE];
+//			while(true){
+//				int actualread=0;
+//				int totalread =0;
+//				while(totalread < PACKETSIZE){
+//					try {
+//						actualread= ris.read(buffer,totalread,PACKETSIZE-totalread);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					totalread+=actualread;
+//				}
+//				DatagramPacket sendPacket = new DatagramPacket(buffer,buffer.length,IPaddress,port);
+//				serverSocket.send(sendPacket);
+//				
+//			}
 //			H263Packetizer mPacketizer=new H263Packetizer();
 //			InetAddress mDestination = InetAddress.getByName("10.0.2.2");
 //			
@@ -176,24 +180,24 @@ public class StreamActivity extends Activity {
 //			mPacketizer.start();
 //			
 			
-		}
+//		}
 
-		private void createSockets() {
-			try {
-				LocalServerSocket lss = new LocalServerSocket("net.majorkernelpanic.librtp-"+11111);
-				mReceiver = new LocalSocket();
-				mReceiver.connect( new LocalSocketAddress("net.majorkernelpanic.librtp-" + 11111 ) );
-				mReceiver.setReceiveBufferSize(500000);
-				mSender = lss.accept();
-				mSender.setSendBufferSize(500000);
-				ris=mReceiver.getInputStream();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
+//		private void createSockets() {
+//			try {
+//				LocalServerSocket lss = new LocalServerSocket("net.majorkernelpanic.librtp-"+11111);
+//				mReceiver = new LocalSocket();
+//				mReceiver.connect( new LocalSocketAddress("net.majorkernelpanic.librtp-" + 11111 ) );
+//				mReceiver.setReceiveBufferSize(500000);
+//				mSender = lss.accept();
+//				mSender.setSendBufferSize(500000);
+//				ris=mReceiver.getInputStream();
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+//		}
 
 		public void surfaceChanged(SurfaceHolder holder, int format, int width,
 				int height) {
